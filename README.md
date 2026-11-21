@@ -54,9 +54,10 @@ command-line interface may change. The initial work is focused on
 establishing the recipe system and getting the first recipes working end
 to end.
 
-The `video-to-png` recipe is the initial example. Check the available
-commands and recipe information in the application itself for the
-current behaviour.
+The `video-to-png` recipe is the initial working example. It extracts
+every frame as `<input>_%04d.png` next to the input file. Check the
+available commands and recipe information in the application itself for
+the current behaviour.
 
 ## Usage
 
@@ -76,12 +77,12 @@ ffrecipes --verbose cook video-to-png movie.mp4
 
 -   `list` displays the available recipes.
 -   `info` displays information about a recipe.
--   `cook` runs a recipe.
+-   `cook` runs a recipe. `video-to-png` writes an image sequence next to
+    each input file.
 -   `--verbose` enables more detailed output.
 
-These examples describe the intended/current prototype interface;
-consult `ffrecipes --help` if help output is available in your
-checked-out version.
+These examples describe the current prototype interface; run
+`ffrecipes help` for the command list.
 
 ## Requirements
 
@@ -120,7 +121,9 @@ As a general rule, a recipe should:
 -   be reusable;
 -   receive inputs and runtime resources through the Pantry;
 -   avoid parsing command-line arguments;
--   avoid locating external tools itself;
+-   use the runner provided by the Pantry instead of calling external
+    tools directly;
+-   honor context cancellation for long-running work;
 -   report progress through the project's logging abstraction;
 -   return errors to the caller rather than terminating the application;
 -   register itself with the Cookbook, following the existing

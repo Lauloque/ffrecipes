@@ -1,6 +1,7 @@
 package dishes
 
 import (
+	"context"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -8,6 +9,7 @@ import (
 	"github.com/Lauloque/ffrecipes/internal/kitchen"
 )
 
+// VideoToPNG extracts PNG frames from video files.
 type VideoToPNG struct{}
 
 func (VideoToPNG) Name() string {
@@ -18,26 +20,35 @@ func (VideoToPNG) Description() string {
 	return "Convert video files to PNG image sequences."
 }
 
-func (VideoToPNG) Cook(pantry *kitchen.Pantry) error {
-
-	pantry.Log.Info("Let's pretend I am cooking!")
+func (VideoToPNG) Cook(ctx context.Context, pantry *kitchen.Pantry) error {
+	if len(pantry.Inputs) == 0 {
+		return fmt.Errorf("no input files provided")
+	}
+	if pantry.FFmpeg == nil {
+		return fmt.Errorf("ffmpeg runner is not configured")
+	}
 
 	for _, input := range pantry.Inputs {
-		msg := fmt.Sprintf("  Found '%s'...", input)
-		pantry.Log.Info(msg)
+		output := strings.TrimSuffix(input, filepath.Ext(input)) + "_%04d.png"
+		pantry.Log.Info(fmt.Sprintf("Extracting PNG frames from %q...", input))
 
-		base := strings.TrimSuffix(input, filepath.Ext(input))
-		new_name := base + ".png"
-		msg2 := fmt.Sprintf("  Will bake into '%s'!", new_name)
-		pantry.Log.Info(msg2)
+		args := []string{
+			"-hide_banner",
+			"-loglevel", "error",
+			"-nostdin",
+			"-y",
+			"-i", input,
+			"-fps_mode", "passthrough",
+			output,
+		}
 
-		pantry.Log.Debug("  Heating up oven...")
-		pantry.Log.Warning("  Summer heat detected, might impact baking!")
-		msg3 := fmt.Sprintf("  Cooked up '%s'!", new_name)
-		pantry.Log.Debug(msg3)
+		if err := pantry.FFmpeg.Run(ctx, args...); err != nil {
+			return fmt.Errorf("convert %q: %w", input, err)
+		}
 
+		pantry.Log.Success(fmt.Sprintf("Wrote %q.", output))
 	}
-	pantry.Log.Success("Done!")
+
 	return nil
 }
 

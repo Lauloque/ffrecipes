@@ -1,19 +1,23 @@
 package app
 
 import (
+	"context"
+
 	"github.com/Lauloque/ffrecipes/internal/kitchen"
 	_ "github.com/Lauloque/ffrecipes/recipes" // Register built-in recipes.
 )
 
 // App coordinates recipe lookup and execution for a user interface.
 type App struct {
-	log kitchen.Logger
+	log    kitchen.Logger
+	ffmpeg kitchen.Runner
 }
 
-// New returns an App that logs through log.
-func New(log kitchen.Logger) *App {
+// New returns an App that logs through log and runs external tools through ffmpeg.
+func New(log kitchen.Logger, ffmpeg kitchen.Runner) *App {
 	return &App{
-		log: log,
+		log:    log,
+		ffmpeg: ffmpeg,
 	}
 }
 
@@ -28,11 +32,12 @@ func (a *App) Recipe(name string) (kitchen.Recipe, bool) {
 }
 
 // Cook runs recipe with the provided inputs.
-func (a *App) Cook(recipe kitchen.Recipe, inputs []string) error {
+func (a *App) Cook(ctx context.Context, recipe kitchen.Recipe, inputs []string) error {
 	pantry := kitchen.Pantry{
 		Inputs: inputs,
 		Log:    a.log,
+		FFmpeg: a.ffmpeg,
 	}
 
-	return recipe.Cook(&pantry)
+	return recipe.Cook(ctx, &pantry)
 }

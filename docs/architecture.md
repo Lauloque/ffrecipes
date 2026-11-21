@@ -41,6 +41,8 @@ The Kitchen contains the core cooking logic:
 
 Recipes log through the `kitchen.Logger` interface exposed by the Pantry. `internal/ui` provides the current CLI implementation; future TUI or GUI frontends can provide their own without changing recipe code.
 
+Recipes run external tools through `pantry.FFmpeg`, which is the `kitchen.Runner` interface. `internal/kitchen/ovens` provides the FFmpeg implementation; recipes never locate or invoke executables directly. Recipe and runner calls receive a `context.Context`, so a frontend can cancel long-running work.
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -49,6 +51,7 @@ sequenceDiagram
     participant Cookbook
     participant Pantry
     participant Recipe
+    participant Oven as FFmpeg Oven
     participant Logger
 
     User->>CLI: cook video-to-png movie.mp4
@@ -58,9 +61,12 @@ sequenceDiagram
     Cookbook-->>App: Recipe
     App-->>CLI: Recipe
 
-    CLI->>App: Cook(recipe, inputs)
-    App->>Pantry: Create with inputs and logger
-    App->>Recipe: Cook(Pantry)
+    CLI->>App: Cook(ctx, recipe, inputs)
+    App->>Pantry: Create with inputs, logger, and runner
+    App->>Recipe: Cook(ctx, Pantry)
+
+    Recipe->>Oven: Run(ctx, args)
+    Oven-->>Recipe: Result
 
     Recipe->>Logger: Messages and results
     Logger-->>User: Terminal output
@@ -77,6 +83,8 @@ Every recipe should:
 - perform one focused task;
 - be reusable;
 - get its inputs through the Pantry;
+- use the runner provided by the Pantry instead of calling `os/exec`;
+- accept a context and honor cancellation;
 - communicate to the user through the logger;
 - never parse CLI arguments;
 - never search for FFmpeg;

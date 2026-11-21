@@ -20,18 +20,20 @@ for hypothetical tools or workflows.
 FFrecipes is an early prototype, and parts of the documented design are
 not implemented yet. Check the code before relying on an assumption:
 
--   `cmd/ffrecipes/main.go` parses options and delegates to
-    `internal/app`, which looks up the recipe, builds a Pantry, and calls
-    `Recipe.Cook`.
--   The `recipes` directory contains one recipe, `video-to-png`. It only
-    logs the work it would do; it does not run FFmpeg or write files.
--   `internal/kitchen/ovens/ffmpeg.go` is a stub: `ovens.Run` does not
-    execute anything, and no recipe calls it.
--   `Pantry.FFmpegPath` exists, but the application never sets it.
--   There are no tests; `go test ./...` succeeds only because no package
-    has test files.
+-   `cmd/ffrecipes/main.go` parses options, creates a signal-aware
+    context, and delegates to `internal/app`, which looks up the recipe,
+    builds a Pantry, and calls `Recipe.Cook`.
+-   The `recipes` directory contains one working recipe, `video-to-png`.
+    It extracts every frame as `<input>_%04d.png` next to each input.
+-   `internal/kitchen/ovens/ffmpeg.go` implements `kitchen.Runner` by
+    executing FFmpeg. It captures FFmpeg output and includes it in
+    returned errors.
+-   The application wires `ovens.NewFFmpeg("ffmpeg")` into the Pantry.
+-   Tests cover the `video-to-png` recipe; most packages still have no
+    tests.
 -   `test.mp4` in the repository root is a local sample input, ignored
-    by Git. Leave it in place.
+    by Git. Generated `test_*.png` files are ignored too. Leave the
+    sample input in place.
 
 Keep this list accurate when the implementation changes.
 
@@ -50,6 +52,10 @@ Keep this list accurate when the implementation changes.
 -   Recipes must not locate or install external executables themselves;
     executable paths come from the Pantry, which the application is
     responsible for populating.
+-   Recipes must run external tools through `pantry.FFmpeg`; do not call
+    `os/exec` from recipe code.
+-   Pass `context.Context` through recipe and runner calls and honor
+    cancellation.
 -   Recipes must not interact directly with the user through terminal
     input or output. Use the project's logging abstraction and return
     errors.
@@ -73,8 +79,8 @@ Use the cooking terminology consistently where it clarifies the design:
 -   **Pantry**: the inputs, logger, and other resources made available
     to a recipe.
 -   **Oven**: an external processing tool integrated for recipes to use.
--   **FFmpeg oven**: the intended primary processing tool, currently a
-    stub in `internal/kitchen/ovens`.
+-   **FFmpeg oven**: the primary processing tool, implemented in
+    `internal/kitchen/ovens`.
 
 Do not force the metaphor onto concepts where it becomes confusing. For
 example, ordinary supporting utilities do not need to be renamed as
@@ -86,7 +92,8 @@ kitchen equipment.
     Go 1.26.4. It has no third-party dependencies; keep it that way
     unless a dependency clearly pays off.
 -   A recipe is a struct implementing `kitchen.Recipe`: `Name() string`,
-    `Description() string`, and `Cook(*kitchen.Pantry) error`.
+    `Description() string`, and
+    `Cook(ctx context.Context, pantry *kitchen.Pantry) error`.
 -   Put each recipe in its own file under `recipes/`, named after the
     recipe (for example `video_to_png.go` for `video-to-png`).
 -   The `recipes/` directory declares `package dishes`, not
@@ -98,6 +105,9 @@ kitchen equipment.
     Treat renaming one as a user-visible change.
 -   Inputs reach a recipe as `pantry.Inputs`, the positional arguments
     after the recipe name. The recipe decides how to interpret them.
+-   Run external tools through `pantry.FFmpeg`, which is the
+    `kitchen.Runner` interface. `internal/kitchen/ovens` provides the
+    FFmpeg implementation; recipe tests can supply a fake runner.
 -   Log through `pantry.Log`, which is the `kitchen.Logger` interface
     (`Info`, `Success`, `Warning`, `Error`, `Debug`). `internal/ui`
     provides the CLI implementation. `Debug` prints only when
@@ -142,8 +152,8 @@ Before changing code:
 
 Do not silently implement speculative features. If a requested change
 would require a significant architectural decision (for example,
-populating `Pantry.FFmpegPath`), explain the trade-offs and ask before
-committing to one.
+changing the `kitchen.Runner` interface or adding a new external tool),
+explain the trade-offs and ask before committing to one.
 
 ## Git workflow
 
@@ -166,17 +176,22 @@ go vet ./...
 go test ./...
 ```
 
-There are currently no test files. Add tests when you introduce logic
-worth testing, such as input validation or argument building, rather
-than treating a passing `go test ./...` as meaningful coverage.
+Tests currently cover the `video-to-png` recipe. Add tests when you
+introduce logic worth testing, such as input validation or argument
+building, rather than treating a passing `go test ./...` as meaningful
+coverage.
 
 For CLI changes, also exercise the affected command manually, including
-missing arguments, unknown recipes, and invalid input where relevant:
+missing arguments, unknown recipes, and invalid input where relevant.
+Run cooking tests in a temporary directory so generated frames do not
+pollute the repository:
 
 ``` sh
+mkdir -p /tmp/ffrecipes-test
+cp test.mp4 /tmp/ffrecipes-test/
 go run ./cmd/ffrecipes list
 go run ./cmd/ffrecipes info video-to-png
-go run ./cmd/ffrecipes --verbose cook video-to-png test.mp4
+go run ./cmd/ffrecipes --verbose cook video-to-png /tmp/ffrecipes-test/test.mp4
 ```
 
 Do not claim that tests or commands passed unless they were actually

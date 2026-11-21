@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 
 	"github.com/Lauloque/ffrecipes/internal/app"
+	"github.com/Lauloque/ffrecipes/internal/kitchen/ovens"
 	"github.com/Lauloque/ffrecipes/internal/ui"
 )
 
@@ -60,7 +63,7 @@ func main() {
 		return
 	}
 
-	application := app.New(ui.Logger{Verbose: verbose})
+	application := app.New(ui.Logger{Verbose: verbose}, ovens.NewFFmpeg("ffmpeg"))
 
 	switch args[0] {
 	case "help":
@@ -95,7 +98,10 @@ func main() {
 			return
 		}
 
-		err := application.Cook(recipe, args[2:])
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+		defer stop()
+
+		err := application.Cook(ctx, recipe, args[2:])
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
