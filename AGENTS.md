@@ -20,9 +20,9 @@ for hypothetical tools or workflows.
 FFrecipes is an early prototype, and parts of the documented design are
 not implemented yet. Check the code before relying on an assumption:
 
--   `cmd/ffrecipes/main.go` parses options, looks up a recipe through
-    the Cookbook, builds a Pantry, and calls `Recipe.Cook` directly.
-    `kitchen.Cook` exists but is unused.
+-   `cmd/ffrecipes/main.go` parses options and delegates to
+    `internal/app`, which looks up the recipe, builds a Pantry, and calls
+    `Recipe.Cook`. `kitchen.Cook` exists but is unused.
 -   The `recipes` directory contains one recipe, `video-to-png`. It only
     logs the work it would do; it does not run FFmpeg or write files.
 -   `internal/kitchen/ovens/ffmpeg.go` is a stub: `ovens.Run` does not
@@ -30,8 +30,8 @@ not implemented yet. Check the code before relying on an assumption:
 -   `Pantry.FFmpegPath` exists, but the application never sets it.
 -   There are no tests; `go test ./...` succeeds only because no package
     has test files.
--   `test.mp4` in the repository root is a sample input. Leave it in
-    place.
+-   `test.mp4` in the repository root is a local sample input, ignored
+    by Git. Leave it in place.
 
 Keep this list accurate when the implementation changes.
 
@@ -42,6 +42,8 @@ Keep this list accurate when the implementation changes.
 -   Prefer small, understandable changes over broad refactors.
 -   Keep recipes independent of the way the application receives user
     input.
+-   Keep shared orchestration in `internal/app`; frontends should only
+    parse input and present results.
 -   Recipes must receive their inputs and runtime resources through the
     Pantry.
 -   Recipes must not parse command-line arguments or inspect `os.Args`.
@@ -63,10 +65,11 @@ Keep this list accurate when the implementation changes.
 Use the cooking terminology consistently where it clarifies the design:
 
 -   **Application**: the user-facing entry point. The CLI is the current
-    interface, not a core kitchen component.
+    interface, not a core kitchen component. Shared orchestration lives
+    in `internal/app`.
 -   **Kitchen**: the core package and execution environment.
 -   **Cook**: intended to coordinate the execution of a recipe.
-    Currently unused; the CLI calls recipes directly.
+    Currently unused; the application layer calls recipes directly.
 -   **Cookbook**: registers and finds available recipes.
 -   **Recipe**: one focused, reusable workflow.
 -   **Pantry**: the inputs, options, logger, and other resources made
@@ -90,9 +93,9 @@ kitchen equipment.
     recipe (for example `video_to_png.go` for `video-to-png`).
 -   The `recipes/` directory declares `package dishes`, not
     `package recipes`. Keep that package name.
--   Register recipes in `init()` with `kitchen.Register`. The application
-    blank-imports the recipes package, so there is no central list to
-    edit and no explicit registration step to add.
+-   Register recipes in `init()` with `kitchen.Register`. The
+    `internal/app` package blank-imports the recipes package, so there is
+    no central list to edit and no explicit registration step to add.
 -   Recipe names are kebab-case and are the public CLI identifiers.
     Treat renaming one as a user-visible change.
 -   Inputs reach a recipe as `pantry.Inputs`, the positional arguments

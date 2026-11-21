@@ -8,66 +8,67 @@ FFrecipes is designed as a set of components. They each have a single responsibi
 flowchart TD
 
 Application["🖥️ Application"]
+App["⚙️ Application layer"]
 
 subgraph Kitchen["👨‍🍳 Kitchen"]
-    Cook["👨‍🍳 Cook"]
     Cookbook["📖 Cookbook"]
     Recipe["📜 Recipe"]
     Pantry["🥫 Pantry"]
 
     subgraph Ovens["🔥 Ovens"]
         FFmpeg["🎬 FFmpeg"]
-        Gifski["🖼️ Gifski"]
     end
 end
 
-Application --> Cook
-Application --> Cookbook
-Application --> Pantry
+Application --> App
+App --> Cookbook
+App --> Pantry
+App --> Recipe
 
-Cook --> Recipe
 Cookbook --> Recipe
 Pantry --> Recipe
 Recipe --> FFmpeg
-Recipe --> Gifski
 ```
 
-The Application is the entry point between the user and FFrecipes. It currently uses a CLI, but should later be replaced or complemented by another interface (GUI or TUI).
+The Application is the entry point between the user and FFrecipes. It currently uses a CLI, but should later be replaced or complemented by another interface (GUI or TUI). The application layer in `internal/app` owns the shared workflow: recipe lookup, Pantry construction, and execution. The CLI in `cmd/ffrecipes` only parses arguments and presents results, so other frontends can reuse the application layer.
 
 The Kitchen contains the core cooking logic:
 
-- Cook coordinates execution;
 - Cookbook manages available recipes;
 - Pantry provides recipes with their required resources;
 - Recipes tell how to use the resources provided by the Pantry;
 - Ovens perform the actual processing work.
+
+`kitchen.Cook` is currently unused; the application layer calls recipes directly.
 
 Recipes log through the `kitchen.Logger` interface exposed by the Pantry. `internal/ui` provides the current CLI implementation; future TUI or GUI frontends can provide their own without changing recipe code.
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant App as Application
+    participant CLI as CLI
+    participant App as Application layer
     participant Cookbook
-    participant Cook
     participant Pantry
     participant Recipe
-    participant Oven as FFmpeg Oven
+    participant Logger
 
-    User->>App: cook video-to-png movie.mp4
+    User->>CLI: cook video-to-png movie.mp4
 
+    CLI->>App: Recipe("video-to-png")
     App->>Cookbook: Find("video-to-png")
     Cookbook-->>App: Recipe
+    App-->>CLI: Recipe
 
-    App->>Pantry: Create execution context
-    App->>Cook: Prepare(recipe, pantry)
+    CLI->>App: Cook(recipe, inputs)
+    App->>Pantry: Create with inputs, logger, and options
+    App->>Recipe: Cook(Pantry)
 
-    Cook->>Recipe: Cook(Pantry)
-    Recipe->>Oven: Execute FFmpeg command
-    Oven-->>Recipe: Result
+    Recipe->>Logger: Messages and results
+    Logger-->>User: Terminal output
 
-    Recipe-->>Cook: Success / Error
-    Cook-->>App: Success / Error
+    Recipe-->>App: Success / Error
+    App-->>CLI: Success / Error
 ```
 
 ## Recipe principles

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/Lauloque/ffrecipes/internal/app"
 	"github.com/Lauloque/ffrecipes/internal/kitchen"
 	"github.com/Lauloque/ffrecipes/internal/ui"
-	_ "github.com/Lauloque/ffrecipes/recipes"
 )
 
 func printHelp() {
@@ -31,18 +31,12 @@ Examples:
   ffrecipes --verbose cook video-to-png movie.mp4`)
 }
 
-func getRecipe(args []string) (kitchen.Recipe, bool) {
+func getRecipeName(args []string) (string, bool) {
 	if len(args) < 2 {
-		fmt.Println(("Missing recipe name"))
-		return nil, false
+		fmt.Println("Missing recipe name")
+		return "", false
 	}
-
-	recipe, ok := kitchen.Find(args[1])
-	if !ok {
-		fmt.Println("Unknown recipe:", args[1])
-		return nil, false
-	}
-	return recipe, true
+	return args[1], true
 }
 
 func getArgsAndOptions() ([]string, kitchen.Options) {
@@ -63,44 +57,53 @@ func getArgsAndOptions() ([]string, kitchen.Options) {
 }
 
 func main() {
-
 	if len(os.Args) < 2 {
 		printHelp()
 		return
 	}
 
 	args, options := getArgsAndOptions()
+	if len(args) == 0 {
+		printHelp()
+		return
+	}
+
+	application := app.New(ui.Logger{Verbose: options.Verbose}, options)
 
 	switch args[0] {
 	case "help":
 		printHelp()
 	case "list":
-		for _, recipe := range kitchen.List() {
+		for _, recipe := range application.Recipes() {
 			fmt.Println(recipe.Name())
 		}
 	case "info":
-		recipe, ok := getRecipe(args)
+		name, ok := getRecipeName(args)
 		if !ok {
+			return
+		}
+
+		recipe, ok := application.Recipe(name)
+		if !ok {
+			fmt.Println("Unknown recipe:", name)
 			return
 		}
 
 		fmt.Println(recipe.Name())
 		fmt.Println(recipe.Description())
 	case "cook":
-		recipe, ok := getRecipe(args)
+		name, ok := getRecipeName(args)
 		if !ok {
 			return
 		}
 
-		pantry := kitchen.Pantry{
-			Inputs: args[2:],
-			Log: ui.Logger{
-				Verbose: options.Verbose,
-			},
-			Options: options,
+		recipe, ok := application.Recipe(name)
+		if !ok {
+			fmt.Println("Unknown recipe:", name)
+			return
 		}
-		err := recipe.Cook(&pantry)
 
+		err := application.Cook(recipe, args[2:])
 		if err != nil {
 			fmt.Println("Error:", err)
 		}
@@ -108,22 +111,4 @@ func main() {
 		fmt.Println("Unknown command:", os.Args[1])
 		return
 	}
-
-	// logger := ui.Logger{}
-
-	// pantry := kitchen.Pantry{
-	// 	Inputs: []string{
-	// 		"example.mp4",
-	// 	},
-
-	// 	FFmpegPath: "ffmpeg",
-
-	// 	Logger: logger,
-	// }
-
-	// fmt.Println("ffrecipes starting")
-
-	// _ = pantry
-
-	// _ = os.Args
 }

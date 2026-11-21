@@ -4,7 +4,7 @@
   - 📄 [README.md](README.md) _General package info_
   - 📂 **cmd**
     - 📂 **ffrecipes**
-      - 📄 [main.go](cmd/ffrecipes/main.go) _Program entry point_
+      - 📄 [main.go](cmd/ffrecipes/main.go) _CLI entry point_
   - 📂 **docs**
     - 📄 [architecture.md](docs/architecture.md) _How FFrecipes functions_
     - 📄 [philosophy.md](docs/philosophy.md) _What is FFrecipes supposed to be_
@@ -12,10 +12,12 @@
     - 📄 [ui.md](docs/ui.md) _How the user interface is layered_
   - 📄 [go.mod](go.mod) _Go module definition and dependencies_
   - 📂 **internal**
+    - 📂 **app**
+      - 📄 [app.go](internal/app/app.go) _Application orchestration shared by frontends_
     - 📂 **kitchen**
       - 📂 **ovens** _Contain all the tools available to do the actual work_
         - 📄 [ffmpeg.go](internal/kitchen/ovens/ffmpeg.go) _Interaction with FFmpeg_
-      - 📄 [cook.go](internal/kitchen/cook.go) _TBD: Supposed to execute recipe using provided pantry, but for now that's done from main.go..._
+      - 📄 [cook.go](internal/kitchen/cook.go) _TBD: unused; the application layer executes recipes directly_
       - 📄 [cookbook.go](internal/kitchen/cookbook.go) _Discovers and registers available recipes_
       - 📄 [logger.go](internal/kitchen/logger.go) _Defines the logging interface available to recipes_
       - 📄 [options.go](internal/kitchen/options.go) _Runtime options provided from the application_
