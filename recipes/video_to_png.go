@@ -1,4 +1,4 @@
-package dishes
+package recipes
 
 import (
 	"context"

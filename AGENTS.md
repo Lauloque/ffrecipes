@@ -96,8 +96,7 @@ kitchen equipment.
     `Cook(ctx context.Context, pantry *kitchen.Pantry) error`.
 -   Put each recipe in its own file under `recipes/`, named after the
     recipe (for example `video_to_png.go` for `video-to-png`).
--   The `recipes/` directory declares `package dishes`, not
-    `package recipes`. Keep that package name.
+-   The `recipes/` directory uses `package recipes`.
 -   Register recipes in `init()` with `kitchen.Register`. The
     `internal/app` package blank-imports the recipes package, so there is
     no central list to edit and no explicit registration step to add.
@@ -115,6 +114,8 @@ kitchen equipment.
 -   The CLI supports `list`, `info <recipe>`,
     `cook <recipe> [inputs...]`, and `help`. Options are parsed only
     before the command, so `--verbose` must precede the subcommand.
+-   CLI commands return exit status 0 on success and 1 on errors, and
+    write errors to stderr.
 
 ## Go conventions
 
@@ -193,6 +194,9 @@ go run ./cmd/ffrecipes list
 go run ./cmd/ffrecipes info video-to-png
 go run ./cmd/ffrecipes --verbose cook video-to-png /tmp/ffrecipes-test/test.mp4
 ```
+
+Check that invalid commands and failing cooks return a non-zero exit
+status.
 
 Do not claim that tests or commands passed unless they were actually
 run. If a check cannot be run, say so.
