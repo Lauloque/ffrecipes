@@ -39,8 +39,6 @@ The Kitchen contains the core cooking logic:
 - Recipes tell how to use the resources provided by the Pantry;
 - Ovens perform the actual processing work.
 
-`kitchen.Cook` is currently unused; the application layer calls recipes directly.
-
 Recipes log through the `kitchen.Logger` interface exposed by the Pantry. `internal/ui` provides the current CLI implementation; future TUI or GUI frontends can provide their own without changing recipe code.
 
 ```mermaid
@@ -61,7 +59,7 @@ sequenceDiagram
     App-->>CLI: Recipe
 
     CLI->>App: Cook(recipe, inputs)
-    App->>Pantry: Create with inputs, logger, and options
+    App->>Pantry: Create with inputs and logger
     App->>Recipe: Cook(Pantry)
 
     Recipe->>Logger: Messages and results

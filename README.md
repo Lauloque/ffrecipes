@@ -37,7 +37,6 @@ The project uses cooking terminology to describe its components:
   ------------- -----------------------------------------------------------
   Application   The user-facing entry point. Currently a CLI.
   Kitchen       The core execution package.
-  Cook          Coordinates the execution of a recipe.
   Cookbook      Registers and finds available recipes.
   Recipe        Performs one focused media-processing task.
   Pantry        Provides recipes with their inputs and runtime resources.

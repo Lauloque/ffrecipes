@@ -6,6 +6,4 @@ type Pantry struct {
 	FFmpegPath string
 
 	Log Logger
-
-	Options Options
 }

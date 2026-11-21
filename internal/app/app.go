@@ -7,15 +7,13 @@ import (
 
 // App coordinates recipe lookup and execution for a user interface.
 type App struct {
-	log     kitchen.Logger
-	options kitchen.Options
+	log kitchen.Logger
 }
 
-// New returns an App that logs through log and passes options to recipes.
-func New(log kitchen.Logger, options kitchen.Options) *App {
+// New returns an App that logs through log.
+func New(log kitchen.Logger) *App {
 	return &App{
-		log:     log,
-		options: options,
+		log: log,
 	}
 }
 
@@ -32,9 +30,8 @@ func (a *App) Recipe(name string) (kitchen.Recipe, bool) {
 // Cook runs recipe with the provided inputs.
 func (a *App) Cook(recipe kitchen.Recipe, inputs []string) error {
 	pantry := kitchen.Pantry{
-		Inputs:  inputs,
-		Log:     a.log,
-		Options: a.options,
+		Inputs: inputs,
+		Log:    a.log,
 	}
 
 	return recipe.Cook(&pantry)

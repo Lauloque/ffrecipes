@@ -17,11 +17,9 @@
     - 📂 **kitchen**
       - 📂 **ovens** _Contain all the tools available to do the actual work_
         - 📄 [ffmpeg.go](internal/kitchen/ovens/ffmpeg.go) _Interaction with FFmpeg_
-      - 📄 [cook.go](internal/kitchen/cook.go) _TBD: unused; the application layer executes recipes directly_
       - 📄 [cookbook.go](internal/kitchen/cookbook.go) _Discovers and registers available recipes_
       - 📄 [logger.go](internal/kitchen/logger.go) _Defines the logging interface available to recipes_
-      - 📄 [options.go](internal/kitchen/options.go) _Runtime options provided from the application_
-      - 📄 [pantry.go](internal/kitchen/pantry.go) _Runtime resources available to recipes (inputs, logger, FFmpeg path, options, ...)_
+      - 📄 [pantry.go](internal/kitchen/pantry.go) _Runtime resources available to recipes (inputs, logger, FFmpeg path, ...)_
       - 📄 [recipe.go](internal/kitchen/recipe.go) _Defines what every recipe must implement_
     - 📂 **ui**
       - 📄 [logger.go](internal/ui/logger.go) _CLI implementation of the kitchen logging interface_

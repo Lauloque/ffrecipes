@@ -22,7 +22,7 @@ not implemented yet. Check the code before relying on an assumption:
 
 -   `cmd/ffrecipes/main.go` parses options and delegates to
     `internal/app`, which looks up the recipe, builds a Pantry, and calls
-    `Recipe.Cook`. `kitchen.Cook` exists but is unused.
+    `Recipe.Cook`.
 -   The `recipes` directory contains one recipe, `video-to-png`. It only
     logs the work it would do; it does not run FFmpeg or write files.
 -   `internal/kitchen/ovens/ffmpeg.go` is a stub: `ovens.Run` does not
@@ -68,12 +68,10 @@ Use the cooking terminology consistently where it clarifies the design:
     interface, not a core kitchen component. Shared orchestration lives
     in `internal/app`.
 -   **Kitchen**: the core package and execution environment.
--   **Cook**: intended to coordinate the execution of a recipe.
-    Currently unused; the application layer calls recipes directly.
 -   **Cookbook**: registers and finds available recipes.
 -   **Recipe**: one focused, reusable workflow.
--   **Pantry**: the inputs, options, logger, and other resources made
-    available to a recipe.
+-   **Pantry**: the inputs, logger, and other resources made available
+    to a recipe.
 -   **Oven**: an external processing tool integrated for recipes to use.
 -   **FFmpeg oven**: the intended primary processing tool, currently a
     stub in `internal/kitchen/ovens`.
@@ -143,9 +141,9 @@ Before changing code:
     architecture, or contributor workflows.
 
 Do not silently implement speculative features. If a requested change
-would require a significant architectural decision (for example, wiring
-`kitchen.Cook` into the CLI or populating `Pantry.FFmpegPath`), explain
-the trade-offs and ask before committing to one.
+would require a significant architectural decision (for example,
+populating `Pantry.FFmpegPath`), explain the trade-offs and ask before
+committing to one.
 
 ## Git workflow
 

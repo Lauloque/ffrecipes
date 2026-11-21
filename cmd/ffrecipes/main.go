@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/Lauloque/ffrecipes/internal/app"
-	"github.com/Lauloque/ffrecipes/internal/kitchen"
 	"github.com/Lauloque/ffrecipes/internal/ui"
 )
 
@@ -39,36 +38,29 @@ func getRecipeName(args []string) (string, bool) {
 	return args[1], true
 }
 
-func getArgsAndOptions() ([]string, kitchen.Options) {
-	args := os.Args[1:]
-
-	options := kitchen.Options{}
+func parseArgs(args []string) ([]string, bool) {
+	verbose := false
 
 	for len(args) > 0 {
 		switch args[0] {
 		case "--verbose":
-			options.Verbose = true
+			verbose = true
 			args = args[1:]
 		default:
-			return args, options
+			return args, verbose
 		}
 	}
-	return args, options
+	return args, verbose
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		printHelp()
-		return
-	}
-
-	args, options := getArgsAndOptions()
+	args, verbose := parseArgs(os.Args[1:])
 	if len(args) == 0 {
 		printHelp()
 		return
 	}
 
-	application := app.New(ui.Logger{Verbose: options.Verbose}, options)
+	application := app.New(ui.Logger{Verbose: verbose})
 
 	switch args[0] {
 	case "help":
@@ -108,7 +100,7 @@ func main() {
 			fmt.Println("Error:", err)
 		}
 	default:
-		fmt.Println("Unknown command:", os.Args[1])
+		fmt.Println("Unknown command:", args[0])
 		return
 	}
 }
