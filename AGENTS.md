@@ -97,9 +97,10 @@ kitchen equipment.
     Treat renaming one as a user-visible change.
 -   Inputs reach a recipe as `pantry.Inputs`, the positional arguments
     after the recipe name. The recipe decides how to interpret them.
--   Log through `pantry.Log` (`Info`, `Success`, `Warning`, `Error`,
-    `Debug`). `Debug` prints only when `--verbose` is set. Do not print
-    directly from recipe code.
+-   Log through `pantry.Log`, which is the `kitchen.Logger` interface
+    (`Info`, `Success`, `Warning`, `Error`, `Debug`). `internal/ui`
+    provides the CLI implementation. `Debug` prints only when
+    `--verbose` is set. Do not print directly from recipe code.
 -   The CLI supports `list`, `info <recipe>`,
     `cook <recipe> [inputs...]`, and `help`. Options are parsed only
     before the command, so `--verbose` must precede the subcommand.
@@ -142,6 +143,16 @@ Do not silently implement speculative features. If a requested change
 would require a significant architectural decision (for example, wiring
 `kitchen.Cook` into the CLI or populating `Pantry.FFmpegPath`), explain
 the trade-offs and ask before committing to one.
+
+## Git workflow
+
+-   Leave changes unstaged for review unless the user asks you to stage
+    them.
+-   Never run `git commit` without explicit approval. You may stage
+    changes and prepare a commit, but wait for approval before
+    committing.
+-   Never run `git push` without a specific request. Approval to commit
+    does not imply approval to push.
 
 ## Testing and validation
 
