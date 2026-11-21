@@ -1,73 +1,50 @@
 # FFrecipes
 
-**A cookbook of reusable FFmpeg recipes.**
+[![GitHub license](https://img.shields.io/github/license/Lauloque/ffrecipes?style=for-the-badge&labelColor=rgb(64,64,64))](https://github.com/Lauloque/ffrecipes/blob/master/LICENSE)  [![Development status](https://img.shields.io/badge/status-in%20development-orange?style=for-the-badge&labelColor=rgb(64,64,64))](https://github.com/Lauloque/ffrecipes/issues)  [![ko-fi](https://img.shields.io/badge/Support%20me%20on-KoFi-red?style=for-the-badge&logo=kofi&labelColor=cyan&logoColor=red)](https://ko-fi.com/H2H818FHX)
 
-FFrecipes is a collection of small, focused media-processing workflows
-for tasks that are useful in real projects but too specific to fit
-comfortably into a general-purpose encoder.
+FFrecipes is a collection of small, reusable FFmpeg recipes for everyday
+media-processing tasks. It makes those workflows easy to find, run, and
+share.
 
-Sometimes you need to extract a PNG image sequence from a video. Other
-times you need to stack videos from different folders, correct rotation
-metadata, burn frame numbers with a particular offset, or handle a
-one-off conversion that turns out to be useful more than once.
+## Motivation
 
-FFrecipes aims to make those workflows easy to find, run, reuse, and
-contribute.
+FFmpeg can do almost anything, but its options are not always easy to
+remember or reuse. Small, useful jobs often end up as one-off commands or
+scripts scattered across machines, with no clear way to find them later
+or share them with someone else.
 
-## What it is (and isn't)
+I built FFrecipes to give those jobs a stable home: one recipe per task,
+with a consistent name, documented inputs, and a common way to run it.
+That makes a workflow easier to reuse months later, adapt when needs
+change, or contribute so others can benefit from it. It is not meant to
+replace full-featured graphical encoders such as HandBrake; it focuses on
+small, specific jobs and repeatable workflows.
 
-FFrecipes is:
+If you keep reaching for FFmpeg to do a specific job, FFrecipes gives you
+a place to keep that work small, discoverable, and independent of any
+single interface.
 
--   a collection of focused FFmpeg workflows;
--   a way to discover what each workflow does and what it needs;
--   a common structure for writing and sharing additional recipes;
--   intended to work across supported operating systems without
-    requiring users to manage a collection of separate scripts and their
-    runtimes.
+## 🚀 Quickstart
 
-FFrecipes is **not** intended to be another full-featured graphical
-media encoder. Tools such as HandBrake already serve that purpose.
-FFrecipes focuses on small, specific jobs and repeatable workflows.
+You need Go and FFmpeg installed and available on your `PATH`.
 
-## The cooking metaphor
+### 1. Install FFrecipes
 
-The project uses cooking terminology to describe its components:
-
-  Term          Responsibility
-  ------------- -----------------------------------------------------------
-  Application   The user-facing entry point. Currently a CLI.
-  Kitchen       The core execution package.
-  Cookbook      Registers and finds available recipes.
-  Recipe        Performs one focused media-processing task.
-  Pantry        Provides recipes with their inputs and runtime resources.
-  Oven          An external processing tool used by a recipe.
-
-FFmpeg is the primary oven. Other tools may be integrated when a
-particular workflow genuinely needs them.
-
-For more detail, see [docs/architecture.md](docs/architecture.md).
-
-## Current status
-
-FFrecipes is under active development and its architecture and
-command-line interface may change. The initial work is focused on
-establishing the recipe system and getting the first recipes working end
-to end.
-
-The `video-to-png` recipe is the initial working example. It extracts
-every frame as `<input>_%04d.png` next to the input file. Check the
-available commands and recipe information in the application itself for
-the current behaviour.
-
-## Usage
-
-The current command structure is:
-
-``` sh
-ffrecipes [options] <command> [arguments]
+```bash
+go install github.com/Lauloque/ffrecipes/cmd/ffrecipes@latest
 ```
 
-Examples:
+### 2. Cook a recipe
+
+```bash
+# Extract every frame from a video as PNG files
+ffrecipes cook video-to-png movie.mp4
+```
+
+This writes `movie_0001.png`, `movie_0002.png`, and so on next to
+`movie.mp4`.
+
+### 3. Explore the CLI
 
 ``` sh
 ffrecipes list
@@ -75,68 +52,82 @@ ffrecipes info video-to-png
 ffrecipes --verbose cook video-to-png movie.mp4
 ```
 
--   `list` displays the available recipes.
--   `info` displays information about a recipe.
--   `cook` runs a recipe. `video-to-png` writes an image sequence next to
-    each input file.
--   `--verbose` enables more detailed output.
+-   `list` shows the available recipes.
+-   `info` describes a recipe.
+-   `cook` runs a recipe.
+-   `--verbose` enables more detailed output. It must come before the
+    command.
 
-These examples describe the current prototype interface; run
-`ffrecipes help` for the command list.
+Run `ffrecipes help` for the command list. For details on what each
+recipe does, see the [recipe catalog](docs/recipes.md).
 
-## Requirements
+## 🤝 Contributing
 
--   Go, to build the application from source.
--   FFmpeg, for recipes that use the FFmpeg oven.
+You need [Go](https://go.dev/) and FFmpeg installed to work on FFrecipes.
 
-Additional external tools may be required by particular recipes. Their
-requirements should be documented by those recipes. FFrecipes does not
-imply that every optional tool is required for every task.
-
-## Build from source
-
-Clone the repository and build the application:
+### Clone the repository
 
 ``` sh
 git clone https://github.com/Lauloque/ffrecipes.git
 cd ffrecipes
-go build -o ffrecipes ./cmd/ffrecipes
 ```
 
-You can then run it from the repository directory:
+### Run the project locally
+
+`go run` is the quickest way to try the project or your changes without
+building a binary:
 
 ``` sh
-./ffrecipes list
+go run ./cmd/ffrecipes list
+go run ./cmd/ffrecipes info video-to-png
+go run ./cmd/ffrecipes cook video-to-png /path/to/video.mp4
 ```
 
-## Contributing
+### Build the binary
 
-New recipes are welcome. Before adding one, take a look at the existing
-implementation and the project architecture.
+``` sh
+go build -o ffrecipes ./cmd/ffrecipes
+./ffrecipes help
+```
 
-As a general rule, a recipe should:
+The built binary is written to the repository root and is ignored by Git.
 
--   describe itself clearly;
--   perform one focused task;
--   be reusable;
+### Run the checks
+
+Before submitting a change, format the code and run the test suite:
+
+``` sh
+gofmt -w .
+go build ./...
+go vet ./...
+go test ./...
+```
+
+### Add a recipe
+
+New recipes are welcome. A recipe should:
+
+-   describe itself clearly and do one focused task;
 -   receive inputs and runtime resources through the Pantry;
--   avoid parsing command-line arguments;
--   use the runner provided by the Pantry instead of calling external
-    tools directly;
--   honor context cancellation for long-running work;
--   report progress through the project's logging abstraction;
--   return errors to the caller rather than terminating the application;
--   register itself with the Cookbook, following the existing
-    convention.
+-   use `pantry.FFmpeg` instead of calling external tools directly;
+-   accept a context and honor cancellation;
+-   report progress through `pantry.Log` and return errors instead of
+    terminating the application;
+-   register itself with the Cookbook;
+-   include tests for input validation and argument building.
 
 Keep recipes independent of the current user interface so they can be
-run through other interfaces in the future.
+run through other interfaces in the future. See
+[Architecture](docs/architecture.md) and the
+[recipe catalog](docs/recipes.md) for more detail.
 
-See:
+### Submit a pull request
 
--   [Architecture](docs/architecture.md)
--   [Project layout](docs/project-layout.md)
--   [AGENTS.md](AGENTS.md), for coding-agent and contributor guidance
+Fork the repository, create a branch, and open a pull request against
+`main`. Keep changes focused, and include what you changed and how you
+tested it.
+
+Coding agents should also read [AGENTS.md](AGENTS.md).
 
 ## License
 

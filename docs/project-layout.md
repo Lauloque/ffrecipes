@@ -9,6 +9,7 @@
     - 📄 [architecture.md](docs/architecture.md) _How FFrecipes functions_
     - 📄 [philosophy.md](docs/philosophy.md) _What is FFrecipes supposed to be_
     - 📄 [project\-layout.md](docs/project-layout.md) _Where is what_
+    - 📄 [recipes.md](docs/recipes.md) _Catalog of available recipes_
     - 📄 [ui.md](docs/ui.md) _How the user interface is layered_
   - 📄 [go.mod](go.mod) _Go module definition and dependencies_
   - 📂 **internal**
