@@ -23,17 +23,21 @@ not implemented yet. Check the code before relying on an assumption:
 -   `cmd/ffrecipes/main.go` parses options, creates a signal-aware
     context, and delegates to `internal/app`, which looks up the recipe,
     builds a Pantry, and calls `Recipe.Cook`.
--   The `recipes` directory contains one working recipe, `video-to-png`.
-    It extracts every frame as `<input>_%04d.png` next to each input.
+-   The `recipes` directory contains two working recipes:
+    `video-to-png` extracts every frame as `<input>_%04d.png` next to each
+    input, and `add-cover-to-video` attaches a JPG or PNG cover to MP4 or
+    MKV files as `<input>.cover.<ext>`.
 -   `internal/kitchen/ovens/ffmpeg.go` implements `kitchen.Runner` by
     executing FFmpeg. It captures FFmpeg output and includes it in
     returned errors.
 -   The application wires `ovens.NewFFmpeg("ffmpeg")` into the Pantry.
--   Tests cover the `video-to-png` recipe; most packages still have no
-    tests.
+-   Shared input-file validation lives in `internal/files` and is used by
+    both recipes.
+-   Tests cover both recipes and the shared file helper; most packages
+    still have no tests.
 -   `test.mp4` in the repository root is a local sample input, ignored
-    by Git. Generated `test_*.png` files are ignored too. Leave the
-    sample input in place.
+    by Git. Generated `test_*.png` and `test.cover.*` files are ignored
+    too. Leave the sample input in place.
 
 Keep this list accurate when the implementation changes.
 

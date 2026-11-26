@@ -29,6 +29,8 @@
     - 📂 **ui**
       - 📄 [logger.go](internal/ui/logger.go) _CLI implementation of the kitchen logging interface_
   - 📂 **recipes** _Recipe implementations_
+    - 📄 [add\_cover\_to\_video.go](recipes/add_cover_to_video.go)
+    - 📄 [add\_cover\_to\_video\_test.go](recipes/add_cover_to_video_test.go) _Tests for the add-cover-to-video recipe_
     - 📄 [video\_to\_png.go](recipes/video_to_png.go)
     - 📄 [video\_to\_png\_test.go](recipes/video_to_png_test.go) _Tests for the video-to-png recipe_
   - 📄 [test.mp4](test.mp4) _Local test file (ignored by Git)_
