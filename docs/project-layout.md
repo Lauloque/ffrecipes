@@ -15,6 +15,9 @@
   - 📂 **internal**
     - 📂 **app**
       - 📄 [app.go](internal/app/app.go) _Application orchestration shared by frontends_
+    - 📂 **files**
+      - 📄 [files.go](internal/files/files.go) _Shared file existence checks for recipes_
+      - 📄 [files_test.go](internal/files/files_test.go) _Tests for file checks_
     - 📂 **kitchen**
       - 📂 **ovens** _Contain all the tools available to do the actual work_
         - 📄 [ffmpeg.go](internal/kitchen/ovens/ffmpeg.go) _FFmpeg implementation of the runner interface_
