@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Lauloque/ffrecipes/internal/files"
 	"github.com/Lauloque/ffrecipes/internal/kitchen"
 )
 
@@ -26,6 +27,12 @@ func (VideoToPNG) Cook(ctx context.Context, pantry *kitchen.Pantry) error {
 	}
 	if pantry.FFmpeg == nil {
 		return fmt.Errorf("ffmpeg runner is not configured")
+	}
+
+	for _, input := range pantry.Inputs {
+		if err := files.Require(input, "input file"); err != nil {
+			return err
+		}
 	}
 
 	for _, input := range pantry.Inputs {
